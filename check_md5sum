@@ -7,7 +7,7 @@
 ## upload files onto workspace, on the HPC Discovery Cluster this can be done through the OnDemand file browser
 
 ## if files were uploaded in zipped folder, unzip the folder
-gzip filename.zip
+unzip filename.zip
 
 ## individual sequence files ending with .fastq.gz should now be available
 
