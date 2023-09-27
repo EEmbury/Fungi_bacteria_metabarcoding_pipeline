@@ -1,0 +1,16 @@
+# Check md5 values to ensure proper data download
+
+# The sequencing facility will provide an md5sum file. After downloading the sequence files, md5sum values must be generated 
+# and compared to the md5sum values from the sequencing facility. Values should be identical. 
+# If values are not identical, an error may have occured in the download process
+
+# generate md5sum values
+
+md5sum *.fastq.gz > checkmd5.out
+
+
+# use "diff" to compare the md5sum you made and the md5sum from the sequencing facility
+
+diff --report-identical-files --ignore-space-change  <(sort checkmd5.out) <(sort md5.edit.txt) > compare_md5.txt
+
+###### output = "Files /dev/fd/63 and /dev/fd/62 are identical"
