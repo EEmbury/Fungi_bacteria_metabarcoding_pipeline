@@ -5,7 +5,3 @@ Analysis of V4V5 16S bacterial sequences and ITS fungal sequences.
 Research conducted by Emily Embury for Master's degree research at New Mexico State University. Conducted under the guidance of Dr. Adriana Romero-Olivares.
 
 Analyses conducted on the NMSU HPC Discovery Cluster
-
-
-Files numbered #_1 refer to processes conducted on bacterial sequences.
-Files numbered #_2 refer to processes conducted on fungal sequences.
