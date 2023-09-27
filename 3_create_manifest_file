@@ -13,6 +13,14 @@
 
 # 1. Create a manifest file for downstream analyses of sequencing data with QIIME2 version 2021.11.0. 
 
+## Illumina file naming conventions utilize underscores. 
+## The command qiime deblur deonise which will be utilized later cannot have underscores
+
+## Remove underscores and replace with dash
+
+for file in *; do mv "$file" "${file//_/-}"; done
+
+
 #To make a manifest file we need the file location for each forward and reverse sequencing files. 
 
 #Find and save into a .txt file the file path to each forward (R1) & reverse (R2) sequence in the directory.
