@@ -1,0 +1,48 @@
+# Generate quality reports of raw paired-end sequences.
+
+# THE FOLLOWING CODE AND TEXT IS BASED UPON: https://github.com/adriluromero/Jornada_DxD_fungal_metabarcoding/blob/main/1_Initial_quality_reports.txt 
+
+
+## 1. Generate fastqc reports on the quality of the '.fastq.gz' files.
+## 2. Use multiqc to compile the data from all individual fastqc reports into one report. 
+
+
+## 1. Generate fastqc reports on the quality of the '.fastq.gz' files.
+
+# install fastqc and multiqc in conda
+# I was working on the NMSU HPC Discovery Cluster and therefore could not directly download fastqc and multiqc
+
+sstack install -n myconda -t conda                       ### installs a personal conda stack
+module load conda                                        ### load conda
+conda activate /fs1/home/embury/sstack/rhel_8/modules    ### use your personal conda stack
+
+    conda install -c bioconda fastqc     ### install packages
+    conda install -c bioconda multiqc
+
+## Generate fastqc reports for all files with a '.fastq.gz' extension.
+fastqc /fs1/home/embury/Jornada_bacteria/Romero-Olivares_Project_002-fastqs/*.fastq.gz
+
+## Make a directory where these files will go
+mkdir /fs1/home/embury/Jornada_bacteria/QC
+
+## Since these reports are pre-trimming, create a 'pre-trim' directory for the reports.
+mkdir /fs1/home/embury/Jornada_bacteria/QC/pre-trim
+
+## Move the individual fastqc reports to the pre-trim directory
+mv /fs1/home/embury/Jornada_bacteria/Romero-Olivares_Project_002-fastqs/*fastqc* /fs1/home/embury/Jornada_bacteria/QC/pre-trim
+
+
+## 4. Use multiqc to compile the data from all individual fastqc reports into one report.
+
+## A single multiqc report makes it easier to view information on all of your files. For example, cheking for adapter content across files. 
+
+## Make a directory where the files will go 
+mkdir /fs1/home/embury/Jornada_bacteria/QC/pre-trim/multiqc
+
+## Run multiqc
+multiqc /fs1/home/embury/Jornada_bacteria/QC/pre-trim -o /fs1/home/embury/Jornada_bacteria/QC/pre-trim/multiqc
+
+## Set the -o flag to the directory where you'd like to save the multiqc report.  
+
+# unload conda when done
+module unload conda
