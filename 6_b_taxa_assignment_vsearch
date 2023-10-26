@@ -1,0 +1,254 @@
+# Classify Taxa with Vsearch
+
+#### https://github.com/Joseph7e/HCGS_Metabarcoding_Tutorials
+#### info about the vsearch classifier https://toolshed.g2.bx.psu.edu/repository/load_invalid_tool?repository_id=a43ea4908816827c&tool_config=qiime_feature-classifier_classify-consensus-vsearch.xml&changeset_revision=71f124e02000&render_repository_actions_for=tool_shed 
+
+qiime feature-classifier classify-consensus-vsearch\
+   --i-query /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/rep-seqs-sep-25-2023.qza\
+   --i-reference-reads /fs1/home/embury/Jornada_bacteria/SILVA/silva-138.1-ssu-c97-seqs-derep-lca.qza\
+   --i-reference-taxonomy /fs1/home/embury/Jornada_bacteria/SILVA/silva-138.1-ssu-c97-tax-derep-lca.qza\
+   --p-perc-identity 0.97\
+   --o-classification /fs1/home/embury/Jornada_bacteria/SILVA/bacteria_taxonomy_9_28_23\
+   --o-search-results /fs1/home/embury/Jornada_bacteria/SILVA/bacteria_taxonomy_9_28_23_search
+
+##### this takes a very long time, I need to dereplicate and cluster sequences to improve efficiency?
+##### https://github.com/qiime2/docs/blob/master/source/tutorials/otu-clustering.rst 
+
+##### I actually don't need to derep or cluster.
+##### the function qiime deblur denoise-16S clusters and creates a representative sequence file.
+###### https://github.com/qiime2/docs/blob/master/source/tutorials/qiime2-for-experienced-microbiome-researchers.rst 
+
+     
+##### bash script for assigning taxa title "taxonomy_2.sh"
+
+#!/bin/bash
+
+#SBATCH --job-name taxa_2   ## name that will show up in the queue
+#SBATCH --output taxa_2.out   ## filename of the output; the %j is equal to jobID; default is slurm-[jobID].out
+#SBATCH --ntasks=1  ## number of tasks (analyses) to run
+#SBATCH --cpus-per-task=32  ## the number of threads allocated to each task
+#SBATCH --mem-per-cpu=16G   # memory per CPU core
+#SBATCH --partition=normal  ## the partitions to run in (comma seperated)
+#SBATCH --time=7-01:00:00  ## time for analysis (day-hour:min:sec)
+#SBATCH --mail-user embury@nmsu.edu  ## your email address
+#SBATCH --mail-type BEGIN  ## slurm will email you when your job starts
+#SBATCH --mail-type END  ## slurm will email you when your job ends
+#SBATCH --mail-type FAIL  ## slurm will email you when your job fails
+#SBATCH --hint=multithread ## allows multithreading 
+
+module load conda
+module use /fs1/home/embury/sstack/rhel_8/stacks/conda
+conda activate qiime2-2023.7
+
+qiime feature-classifier classify-consensus-vsearch\
+   --i-query /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/rep-seqs-sep-25-2023.qza \
+   --i-reference-reads /fs1/home/embury/Jornada_bacteria/SILVA/silva-138.1-ssu-c97-seqs-derep-lca.qza\
+   --i-reference-taxonomy /fs1/home/embury/Jornada_bacteria/SILVA/silva-138.1-ssu-c97-tax-derep-lca.qza\
+   --p-perc-identity 0.97\
+   --p-maxaccepts 5 \
+   --o-classification /fs1/home/embury/Jornada_bacteria/SILVA/bacteria_taxonomy_10_1_23\
+   --o-search-results /fs1/home/embury/Jornada_bacteria/SILVA/bacteria_taxonomy_10_1_23_search\
+   --verbose \
+   --p-threads 32
+
+### viewing taxonomy output
+
+#!/bin/bash
+
+#SBATCH --job-name taxa_vis   ## name that will show up in the queue
+#SBATCH --output taxa_vis.out   ## filename of the output; the %j is equal to jobID; default is slurm-[jobID].out
+#SBATCH --ntasks=1  ## number of tasks (analyses) to run
+#SBATCH --cpus-per-task=20  ## the number of threads allocated to each task
+#SBATCH --mem-per-cpu=10G   # memory per CPU core
+#SBATCH --partition=normal  ## the partitions to run in (comma seperated)
+#SBATCH --time=0-10:01:00  ## time for analysis (day-hour:min:sec)
+#SBATCH --mail-user embury@nmsu.edu  ## your email address
+#SBATCH --mail-type BEGIN  ## slurm will email you when your job starts
+#SBATCH --mail-type END  ## slurm will email you when your job ends
+#SBATCH --mail-type FAIL  ## slurm will email you when your job fails
+
+module load conda
+module use /fs1/home/embury/sstack/rhel_8/stacks/conda
+conda activate qiime2-2023.7
+
+qiime metadata tabulate\
+   --m-input-file /fs1/home/embury/Jornada_bacteria/SILVA/bacteria_taxonomy_10_1_23.qza\
+   --o-visualization /fs1/home/embury/Jornada_bacteria/SILVA/bacteria_taxonomy_10_10_23.qzv
+
+# Import Metadata
+
+
+#!/bin/bash
+
+#SBATCH --job-name metadata   ## name that will show up in the queue
+#SBATCH --output metadata.out   ## filename of the output; the %j is equal to jobID; default is slurm-[jobID].out
+#SBATCH --ntasks=1  ## number of tasks (analyses) to run
+#SBATCH --cpus-per-task=20  ## the number of threads allocated to each task
+#SBATCH --mem-per-cpu=10G   # memory per CPU core
+#SBATCH --partition=normal  ## the partitions to run in (comma seperated)
+#SBATCH --time=0-10:01:00  ## time for analysis (day-hour:min:sec)
+#SBATCH --mail-user embury@nmsu.edu  ## your email address
+#SBATCH --mail-type BEGIN  ## slurm will email you when your job starts
+#SBATCH --mail-type END  ## slurm will email you when your job ends
+#SBATCH --mail-type FAIL  ## slurm will email you when your job fails
+
+module load conda
+module use /fs1/home/embury/sstack/rhel_8/stacks/conda
+conda activate qiime2-2023.7
+
+qiime metadata tabulate \
+     --m-input-file /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/metadata.tsv \
+     --o-visualization /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/tabulated-sample-metadata.qzv
+
+
+
+
+# associate taxonomy with metadata
+
+#!/bin/bash
+
+#SBATCH --job-name metadata   ## name that will show up in the queue
+#SBATCH --output metadata.out   ## filename of the output; the %j is equal to jobID; default is slurm-[jobID].out
+#SBATCH --ntasks=1  ## number of tasks (analyses) to run
+#SBATCH --cpus-per-task=20  ## the number of threads allocated to each task
+#SBATCH --mem-per-cpu=10G   # memory per CPU core
+#SBATCH --partition=normal  ## the partitions to run in (comma seperated)
+#SBATCH --time=0-10:01:00  ## time for analysis (day-hour:min:sec)
+#SBATCH --mail-user embury@nmsu.edu  ## your email address
+#SBATCH --mail-type BEGIN  ## slurm will email you when your job starts
+#SBATCH --mail-type END  ## slurm will email you when your job ends
+#SBATCH --mail-type FAIL  ## slurm will email you when your job fails
+
+module load conda
+module use /fs1/home/embury/sstack/rhel_8/stacks/conda
+conda activate qiime2-2023.7
+
+qiime taxa barplot --i-table /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/table-sep-25-2023.qza\
+   --i-taxonomy /fs1/home/embury/Jornada_bacteria/SILVA/bacteria_taxonomy_10_1_23.qza\
+   --o-visualization /fs1/home/embury/Jornada_bacteria/SILVA/taxa-barplot\
+   --m-metadata-file /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/metadata.tsv
+# filter/clean taxonomy output
+###### https://bioinfo.ird.fr/index.php/tutorials-fr/qiime2-in-command-line/
+###### https://www.youtube.com/watch?v=c7H8jLjTxSE
+
+##### rarefy to 5250 and will loose the following samples (96.35% of samples will be retained)
+84-S86	        4878
+117-S120	    4413
+CONTROL1-S1	    181
+CONTROL2-S79	12
+CONTROL3-S109	4
+
+#!/bin/bash
+
+#SBATCH --job-name rarefy   ## name that will show up in the queue
+#SBATCH --output rarefy.out   ## filename of the output; the %j is equal to jobID; default is slurm-[jobID].out
+#SBATCH --ntasks=1  ## number of tasks (analyses) to run
+#SBATCH --cpus-per-task=20  ## the number of threads allocated to each task
+#SBATCH --mem-per-cpu=10G   # memory per CPU core
+#SBATCH --partition=normal  ## the partitions to run in (comma seperated)
+#SBATCH --time=0-10:01:00  ## time for analysis (day-hour:min:sec)
+#SBATCH --mail-user embury@nmsu.edu  ## your email address
+#SBATCH --mail-type BEGIN  ## slurm will email you when your job starts
+#SBATCH --mail-type END  ## slurm will email you when your job ends
+#SBATCH --mail-type FAIL  ## slurm will email you when your job fails
+
+module load conda
+module use /fs1/home/embury/sstack/rhel_8/stacks/conda
+conda activate qiime2-2023.7
+
+qiime feature-table rarefy \
+  --i-table /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/table-sep-25-2023.qza \
+  --p-sampling-depth 5250 \
+  --o-rarefied-table /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/16S-table-rarefied-10-11-23.qza
+
+
+
+###### remove ASVs present only once and summariza after filtering
+
+#!/bin/bash
+
+#SBATCH --job-name rarefy_filter   ## name that will show up in the queue
+#SBATCH --output rarefy_filter.out   ## filename of the output; the %j is equal to jobID; default is slurm-[jobID].out
+#SBATCH --ntasks=1  ## number of tasks (analyses) to run
+#SBATCH --cpus-per-task=20  ## the number of threads allocated to each task
+#SBATCH --mem-per-cpu=10G   # memory per CPU core
+#SBATCH --partition=normal  ## the partitions to run in (comma seperated)
+#SBATCH --time=0-10:01:00  ## time for analysis (day-hour:min:sec)
+#SBATCH --mail-user embury@nmsu.edu  ## your email address
+#SBATCH --mail-type BEGIN  ## slurm will email you when your job starts
+#SBATCH --mail-type END  ## slurm will email you when your job ends
+#SBATCH --mail-type FAIL  ## slurm will email you when your job fails
+
+module load conda
+module use /fs1/home/embury/sstack/rhel_8/stacks/conda
+conda activate qiime2-2023.7
+
+qiime feature-table filter-features \
+  --i-table /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/16S-table-rarefied-10-11-23.qza \
+  --p-min-samples 2 \
+  --o-filtered-table /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/16S-table-rarefied-filtered-10-11-23.qza
+
+
+ qiime feature-table summarize \
+  --i-table /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/16S-table-rarefied-filtered-10-11-23.qza \
+  --o-visualization /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/16S-table-rarefied-filtered-10-11-23.qzv \
+  --m-sample-metadata-file /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/metadata.tsv
+
+
+
+
+# Output data for R
+
+###### https://blog.codyglickman.com/2018/10/qiime2-to-phyloseq.html
+
+# Export table (rarefied)
+qiime tools export \
+--input-path /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/16S-table-rarefied-filtered-10-11-23.qza \
+--output-path /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/rarefied
+
+# export table (no edits)
+qiime tools export \
+--input-path /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/table-sep-25-2023.qza \
+--output-path /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/
+
+# Export taxonomy 
+qiime tools export \
+--input-path /fs1/home/embury/Jornada_bacteria/SILVA/bacteria_taxonomy_10_1_23.qza \
+--output-path /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq
+
+# The header of the taxonomy file must be converted to match proper format for merging with biom file
+sed 's/Feature ID/#OTUID/g' /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/taxonomy.tsv | sed 's/Taxon/taxonomy/g' | sed 's/Consensus/consensus/g' > /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/biom-taxonomy.tsv
+
+
+# merge taxonomy with biom (rare)
+biom add-metadata \
+    -i /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/feature-table-rare.biom \
+    -o /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/bacteria_taxa_table_rare.biom \
+    --observation-metadata-fp /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/biom-taxonomy.tsv \
+    --sc-separated taxonomy
+
+
+# merge taxonomy with biom (raw)
+biom add-metadata \
+    -i /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/feature-table-raw.biom \
+    -o /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/bacteria_taxa_table_raw.biom \
+    --observation-metadata-fp /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/biom-taxonomy.tsv \
+    --sc-separated taxonomy
+
+
+
+
+
+
+# Create files that have been filtered with controls
+###### https://doi.org/10.1128%2FmSystems.00290-19
+
+
+# export table (no edits)
+qiime tools export \
+--input-path /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/table-sep-25-2023.qza \
+--output-path /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/Filtered_Controls
+
+
+
+filter_samples_from_otu_table.py -i /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/Filtered_Controls/feature-table.biom -o /fs1/home/embury/Jornada_bacteria/qiime_no_underscore/Phyloseq/Filtered_Controls/otu_table_control_samples.biom -m map.txt -s "sample-id:CONTROL*"
