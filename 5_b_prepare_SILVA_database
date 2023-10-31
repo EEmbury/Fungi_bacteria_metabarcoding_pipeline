@@ -64,12 +64,11 @@ qiime rescript filter-seqs-length-by-taxon \
 ###### "there may be identical full-length sequences with either identical or different taxonomies"
 ###### "if you would like your reference database to simply have a single consensus taxonomy for a given unique sequence... then complete dereplication of your reference sequences and taxonomy is required"
 
-###### p-mode 'majority' = finds the most common taxonomic label associated with a given unique sequence 
 
 qiime rescript dereplicate \
     --i-sequences /fs1/home/embury/Jornada_bacteria/SILVA/silva-138.1-ssu-nr99-seqs-filt.qza \
     --i-taxa /fs1/home/embury/Jornada_bacteria/SILVA/silva-138.1-ssu-nr99-tax.qza \
     --p-perc-identity 0.97 \
-    --p-mode 'majority' \
+    --p-mode 'uniq' \
     --o-dereplicated-sequences /fs1/home/embury/Jornada_bacteria/SILVA/silva-138.1-ssu-c97-seqs-derep-lca.qza \
     --o-dereplicated-taxa /fs1/home/embury/Jornada_bacteria/SILVA/silva-138.1-ssu-c97-tax-derep-lca.qza
