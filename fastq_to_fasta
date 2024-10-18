@@ -1,0 +1,14 @@
+### to upload data to NCBI it needs to be in fasta format. I was given fastq format.
+
+### restructure data into fasta using sed
+
+for file in *.fastq; do
+  sed -n '1~4s/^@/>/p;2~4p' "$file" > "$file.fasta"
+done
+
+
+### this above code added .fasta but did not remove the .fastq. The following code removes the .fastq
+
+for f in *.fastq.fasta; do
+    mv -- $f ${f/.fastq/}
+done
